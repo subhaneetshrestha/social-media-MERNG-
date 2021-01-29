@@ -1,5 +1,6 @@
 const {
-    ApolloServer
+    ApolloServer,
+    PubSub
 } = require('apollo-server');
 const dotenv = require('dotenv')
 
@@ -18,11 +19,12 @@ const typeDefs = require('./graphql/typedefs');
 // Load resolvers
 const resolvers = require('./graphql/resolvers')
 
+const pubsub = new PubSub();
 
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: ({ req }) => ({ req })
+    context: ({ req }) => ({ req, pubsub })
 });
 
 server.listen({

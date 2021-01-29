@@ -49,6 +49,10 @@ module.exports = {
 
             const post = await newPost.save();
 
+            context.pubsub.publish('NEW_POST', {
+                newPost: post
+            })
+
             return post;
         },
 
@@ -135,13 +139,17 @@ module.exports = {
             }
         },
 
-        async likePost(_, { postId }, context) {
-            const { username } = checkAuth(context);
+        async likePost(_, {
+            postId
+        }, context) {
+            const {
+                username
+            } = checkAuth(context);
 
             const post = await Post.findById(postId);
 
-            if(post) {
-                if(post.likes.find(like => like.username === username)) {
+            if (post) {
+                if (post.likes.find(like => like.username === username)) {
                     // Post already liked so unlike it
                     post.likes = post.likes.filter(like => like.username !== username)
                 } else {
@@ -154,7 +162,15 @@ module.exports = {
 
                 await post.save();
                 return post;
-            } else throw new UserInputError(`Post not found with id ${postId}`) 
+            } else throw new UserInputError(`Post not found with id ${postId}`)
+        },
+    },
+
+    Subscription: {
+        newPost: {
+            subscribe: (_, __, {
+                pubsub
+            }) => pubsub.asyncIterator('NEW_POST')
         }
     }
 }
