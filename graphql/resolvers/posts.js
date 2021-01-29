@@ -133,6 +133,28 @@ module.exports = {
             } else {
                 throw new UserInputError(`Post with id ${postId} not found`);
             }
+        },
+
+        async likePost(_, { postId }, context) {
+            const { username } = checkAuth(context);
+
+            const post = await Post.findById(postId);
+
+            if(post) {
+                if(post.likes.find(like => like.username === username)) {
+                    // Post already liked so unlike it
+                    post.likes = post.likes.filter(like => like.username !== username)
+                } else {
+                    // Not liked so like the po
+                    post.likes.push({
+                        username,
+                        createdAt: new Date().toISOString()
+                    })
+                }
+
+                await post.save();
+                return post;
+            } else throw new UserInputError(`Post not found with id ${postId}`) 
         }
     }
 }
